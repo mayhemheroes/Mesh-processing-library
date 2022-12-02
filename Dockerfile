@@ -1,4 +1,4 @@
-FROM fuzzers/afl:2.52
+FROM fuzzers/afl:2.52 as builder
 
 RUN apt-get update
 RUN apt install -y build-essential wget git clang cmake  automake autotools-dev  libtool zlib1g zlib1g-dev libexif-dev libjpeg-dev libpng-dev libx11-dev libgl-dev  libglu1-mesa libglu1-mesa-dev
@@ -14,5 +14,9 @@ RUN cp ./demos/data/gcanyon_elev_crop.bw.png /meshpngCorpus
 RUN wget https://filesamples.com/samples/image/png/sample_640%C3%97426.png
 RUN cp *.png /meshpngCorpus
 
-ENTRYPOINT ["afl-fuzz", "-i", "/meshpngCorpus", "-o", "/meshprocesslibOut"]
-CMD ["/Mesh-processing-library/bin/clang/Filterimage", "@@", "-to", "jpg", ">", "out.jpg"]
+FROM fuzzers/afl:2.52
+COPY --from=builder /Mesh-processing-library/bin/clang/Filterimage /
+COPY --from=builder /Mesh-processing-library/demos/data/*.png /testsuite/
+
+ENTRYPOINT ["afl-fuzz", "-i", "/testsuite/", "-o", "/meshprocesslibOut"]
+CMD ["/Filterimage", "@@", "-to", "jpg", ">", "/dev/null"]
