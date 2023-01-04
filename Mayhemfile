@@ -1,0 +1,6 @@
+project: mesh-processing-lib
+target: mesh-processing-lib
+
+cmds:
+  - cmd: /Filterimage @@ -to jpg '>' /dev/null
+    env: {}
